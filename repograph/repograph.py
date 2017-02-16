@@ -34,9 +34,12 @@ def iter_submodules(gh, repo):
     parser = configparser.RawConfigParser()
     parser.read_string(gitmodules)
 
+    head = repo.get_commits()[0]
+
     for section_name in parser.sections():
         section = parser[section_name]
         url = section['url']
+        path = section['path']
 
         try:
             submodule_name = extract_submodule_name(url)
@@ -50,7 +53,16 @@ def iter_submodules(gh, repo):
             click.echo("Can't find submodule %r" % submodule_name, err=True)
             continue
 
-        yield repo_name, submodule_name
+        sub_version = repo.get_file_contents(path).sha
+
+        sub_head = sub_repo.get_commits()[0].sha
+
+        if sub_head != sub_version:
+            comp = sub_repo.compare(sub_version, sub_head)
+        else:
+            comp = None
+
+        yield repo_name, submodule_name, comp
         yield from iter_submodules(gh, sub_repo)
 
 
@@ -131,11 +143,18 @@ def main(token,
     repos = resolve_repos(gh, orgs, repos)
 
     for repo in repos:
-        for source, dest in iter_submodules(gh, repo):
+        for source, dest, comp in iter_submodules(gh, repo):
             if strip_org:
                 source = source.rsplit('/')[-1]
                 dest = dest.rsplit('/')[-1]
-            graph.add_edge(source, dest)
+            attrs = {}
+            if comp is not None:
+                attrs['label'] = str(comp.total_commits) \
+                                 if comp.total_commits \
+                                    else "Not on master."
+                attrs['labelURL'] = comp.permalink_url
+                attrs['color'] = 'red'
+            graph.add_edge(source, dest, **attrs)
 
     if output.endswith('.dot'):
         print(graph, file=open(output, 'w'))
