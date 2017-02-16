@@ -57,10 +57,7 @@ def iter_submodules(gh, repo):
 
         sub_head = sub_repo.get_commits()[0].sha
 
-        if sub_head != sub_version:
-            comp = sub_repo.compare(sub_version, sub_head)
-        else:
-            comp = None
+        comp = sub_repo.compare(sub_version, sub_head)
 
         yield repo_name, submodule_name, comp
         yield from iter_submodules(gh, sub_repo)
@@ -148,12 +145,19 @@ def main(token,
                 source = source.rsplit('/')[-1]
                 dest = dest.rsplit('/')[-1]
             attrs = {}
-            if comp is not None:
-                attrs['label'] = str(comp.total_commits) \
-                                 if comp.total_commits \
-                                    else "Not on master."
+            status = comp.status
+            if status == 'ahead':
+                attrs['label'] = "{} commits behind master.".format(
+                    comp.total_commits)
                 attrs['labelURL'] = comp.permalink_url
+                attrs['labeltooltip'] = comp.permalink_url
                 attrs['color'] = 'red'
+            elif status == 'behind':
+                attrs['label'] = 'Not on master.'
+                attrs['labelURL'] = comp.permalink_url
+                attrs['labeltooltip'] = comp.permalink_url
+                attrs['color'] = 'red'
+                attrs['style'] = 'dotted'
             graph.add_edge(source, dest, **attrs)
 
     if output.endswith('.dot'):
