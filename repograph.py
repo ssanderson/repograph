@@ -89,7 +89,7 @@ def resolve_repos(gh, orgs, repos):
               multiple=True,
               help="GitHub Organization to include")
 @click.option('-o', '--output',
-              default='repograph.png',
+              default='repograph.svg',
               show_default=True,
               help="Output Path")
 @click.option('-l', '--layout-program',
