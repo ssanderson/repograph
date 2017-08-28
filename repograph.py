@@ -15,7 +15,7 @@ class CantExtractName(Exception):
 def extract_submodule_name(url):
     if url.startswith('git@github.com:'):
         return url.split('git@github.com:')[1].split('.git')[0].strip('/')
-    elif url.startswith('https://github.com'):
+    elif url.startswith('https://github.com') or url.startswith('git://github.com'):
         return urlparse(url).path[1:].split('.git')[0].strip('/')
     else:
         raise CantExtractName(url)
