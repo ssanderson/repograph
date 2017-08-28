@@ -3,6 +3,13 @@ RepoGraph
 
 Visualize GitHub submodule graphs with ``dot``.
 
+Installation
+------------
+
+.. code-block:: bash
+
+   $ pip install repograph
+
 Usage
 -----
 
@@ -32,7 +39,7 @@ Usage
       $ export GITHUB_API_TOKEN=<token>
 
       # Draw a graph rooted at a single repo.
-      $ python -m repograph -r <repo>
+      $ repograph -r <repo>
 
       # Draw a graph rooted with all the repos in an org.
-      $ python -m repograph -o <org>
+      $ repograph -o <org>
